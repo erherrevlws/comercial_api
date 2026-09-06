@@ -1,0 +1,16 @@
+# Archivos de caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Disbribution / packaging
+.Python
+.env
+
+# Enviromets
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
