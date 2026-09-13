@@ -5,6 +5,7 @@ from models import producto
 from models.categoria import Categoria 
 from models.producto import Producto, ProductoCreate, ProductoUpdate, ProductoUpdatePatch
 from datetime import datetime
+from config.security_Dependencia import Token_Dependencia
 
 router = APIRouter()
 
@@ -28,7 +29,18 @@ def get_producto(id: int, session: SessionDeDependencia):
     return resultado_de_consulta
 
 @router.post("/productos", response_model=Producto, status_code=status.HTTP_201_CREATED)
-def create_producto(datos_producto: ProductoCreate, session: SessionDeDependencia):
+def create_producto(
+    datos_producto: ProductoCreate,
+      session: SessionDeDependencia,
+      token: Token_Dependencia
+      ):
+    if token["id_rol"] != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Solo el administrador puede modificar el catálogo de productos"
+    )
+
+
 
     consulta = select(Categoria).where(Categoria.id == datos_producto.id_categoria)
     categoria = session.exec(consulta).first()
@@ -50,7 +62,12 @@ def create_producto(datos_producto: ProductoCreate, session: SessionDeDependenci
     return nuevo_producto
 
 @router.delete("/productos/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_producto(id: int, session: SessionDeDependencia):
+def delete_producto(id: int, session: SessionDeDependencia, token: Token_Dependencia):
+    if token["id_rol"] != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Solo el administrador puede modificar el catálogo de productos"
+    )
     consulta = select(Producto).where(Producto.id == id)
     resultado_de_consulta = session.exec(consulta).first()
     if not resultado_de_consulta:
@@ -65,8 +82,14 @@ def delete_producto(id: int, session: SessionDeDependencia):
 def update_producto(
     id: int,
     datos_producto: ProductoUpdate,
-    session: SessionDeDependencia
+    session: SessionDeDependencia, 
+    token: Token_Dependencia
 ):
+    if token["id_rol"] != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Solo el administrador puede modificar el catálogo de productos"
+    )
     consulta = select(Producto).where(Producto.id == id)
     resultado_de_consulta = session.exec(consulta).first()
 

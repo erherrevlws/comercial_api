@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, status, Query
 from sqlmodel import select
 from models.cliente import Cliente, ClienteCreate, ClienteUpdate
 from config.session_Dependencia import SessionDeDependencia
+from config.security_Dependencia import Token_Dependencia
 
 router = APIRouter()
 
@@ -44,7 +45,12 @@ def update_cliente(id: int, datos: ClienteUpdate, session: SessionDeDependencia)
     return cliente
 
 @router.delete("/clientes/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_cliente(id: int, session: SessionDeDependencia):
+def delete_cliente(id: int, session: SessionDeDependencia, token: Token_Dependencia):
+    if token["id_rol"] != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo el administrador puede eliminar clientes"
+        )
     cliente = session.exec(select(Cliente).where(Cliente.id == id)).first()
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")

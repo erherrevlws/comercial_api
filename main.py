@@ -8,8 +8,9 @@ from routers.usuario_router import router as usuarios_router
 from routers.tipo_pago_router import router as tipo_pago_router
 from routers.cliente_router import router as clientes_router
 from routers.venta_router import router as ventas_router
-from routers.detalle_venta_router import router as detalle_ventas_router    
-import models
+from routers.detalle_venta_router import router as detalle_ventas_router  
+from oauth.oauth import router as oauth_router  
+import models as models
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,3 +33,4 @@ app.include_router(tipo_pago_router, tags=["tipo_pago"])
 app.include_router(clientes_router, tags=["clientes"])
 app.include_router(ventas_router, tags=["ventas"])
 app.include_router(detalle_ventas_router, tags=["detalle_ventas"])
+app.include_router(oauth_router, tags=["oauth"])
