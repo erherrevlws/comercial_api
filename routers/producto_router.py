@@ -6,6 +6,9 @@ from models.categoria import Categoria
 from models.producto import Producto, ProductoCreate, ProductoUpdate, ProductoUpdatePatch
 from datetime import datetime
 from config.security_Dependencia import Token_Dependencia
+from typing import Annotated
+from fastapi import APIRouter, HTTPException, status, Query, UploadFile, File
+from services.guardar_imagen import guardar_imagen
 
 router = APIRouter()
 
@@ -42,7 +45,7 @@ def create_producto(
 
 
 
-    consulta = select(Categoria).where(Categoria.id == datos_producto.id_categoria)
+    consulta = select(Categoria).where(Categoria.id == datos_producto.categoria_id)
     categoria = session.exec(consulta).first()
     if not categoria:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Categoría con id {datos_producto.id_categoria} no encontrada".format(datos_producto=datos_producto))
@@ -150,6 +153,36 @@ def patch_producto(id: int, datos_producto: ProductoUpdatePatch, session: Sessio
         producto.imagen = datos_producto.imagen
 
     producto.updated_at = datetime.utcnow()
+    session.add(producto)
+    session.commit()
+    session.refresh(producto)
+    return producto
+
+@router.patch("/productos/{id}/imagen", response_model=Producto, status_code=status.HTTP_200_OK)
+def upload_imagen_producto(
+    id: int,
+    archivo: Annotated[UploadFile, File(...)],
+    session: SessionDeDependencia,
+    token: Token_Dependencia
+):
+    if token["id_rol"] != 1:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo el administrador puede actualizar la imagen del producto"
+        )
+
+    producto = session.exec(select(Producto).where(Producto.id == id)).first()
+    if not producto:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Producto no encontrado"
+        )
+
+    resultado_subida = guardar_imagen(archivo)
+
+    producto.imagen = resultado_subida["url"]
+    producto.updated_at = datetime.utcnow()
+
     session.add(producto)
     session.commit()
     session.refresh(producto)

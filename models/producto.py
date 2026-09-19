@@ -10,7 +10,7 @@ class ProductoBase(SQLModel):
     precio_compra: Decimal = Field(nullable=False, gt=0)
     precio_venta: Decimal = Field(nullable=False, gt=0)
     stock: int = Field(nullable=False, ge=0)
-    imagen: str = Field(nullable=False, max_length=255)
+    imagen: Optional[str ]= Field(nullable=False, max_length=255)
     categoria_id: int = Field(nullable=False, foreign_key="categorias.id")
 
 class Producto(ProductoBase, table=True):

@@ -11,6 +11,8 @@ from routers.venta_router import router as ventas_router
 from routers.detalle_venta_router import router as detalle_ventas_router  
 from oauth.oauth import router as oauth_router  
 import models as models
+import os
+from fastapi.staticfiles import StaticFiles
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -20,6 +22,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.title = "API Tienda la Cachacha"
 app.version = "0.0.1"
+
+#codigo implementado para la carga de imagenes
+os.makedirs("imagenes", exist_ok=True)
+app.mount("/imagenes", StaticFiles(directory="imagenes"), name="imagenes")
 
 @app.get("/", summary="Comprobando esta de api", status_code=status.HTTP_200_OK)
 async def home():
@@ -34,3 +40,4 @@ app.include_router(clientes_router, tags=["clientes"])
 app.include_router(ventas_router, tags=["ventas"])
 app.include_router(detalle_ventas_router, tags=["detalle_ventas"])
 app.include_router(oauth_router, tags=["oauth"])
+
